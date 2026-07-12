@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4C PAK21 dalam Pengajaran Pecahan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#FF6B4A;
+    --teal:#1BA098;
+    --gold:#FFC845;
+    --indigo:#5B5FEF;
+    --crust:#E8A05C;
+    --ink:#2A2A2A;
+    --empty:#ECECEC;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    background:#FFFFFF;
+    line-height:1.6;
+  }
+  .wrap{
+    max-width:820px;
+    margin:0 auto;
+    padding:44px 22px 90px;
+  }
+  .fade-item{
+    opacity:0;
+    transform:translateY(14px);
+    animation:fadeUp 0.6s ease forwards;
+  }
+  @keyframes fadeUp{ to{opacity:1; transform:translateY(0);} }
+
+  h1.page-title{
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:clamp(24px, 4.5vw, 32px);
+    text-align:center;
+    margin:0 0 8px;
+  }
+  p.instruction{
+    text-align:center;
+    color:#555;
+    font-size:15.5px;
+    margin:0 0 30px;
+  }
+
+  /* ================= progress pizza plate ================= */
+  .plate-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-bottom:36px;
+  }
+  .plate{
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    background:conic-gradient(
+      var(--empty) 0deg 90deg,
+      var(--empty) 90deg 180deg,
+      var(--empty) 180deg 270deg,
+      var(--empty) 270deg 360deg
+    );
+    border:9px solid var(--crust);
+    box-shadow:0 6px 20px rgba(0,0,0,0.12), inset 0 0 0 3px rgba(255,255,255,0.6);
+    transition:transform 0.3s ease;
+    position:relative;
+  }
+  .plate::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    background:
+      linear-gradient(to bottom, transparent 49%, rgba(255,255,255,0.55) 49%, rgba(255,255,255,0.55) 51%, transparent 51%),
+      linear-gradient(to right, transparent 49%, rgba(255,255,255,0.55) 49%, rgba(255,255,255,0.55) 51%, transparent 51%);
+    pointer-events:none;
+  }
+  .plate.complete{
+    animation:plateBounce 0.6s ease;
+  }
+  @keyframes plateBounce{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.12); }
+    100%{ transform:scale(1); }
+  }
+  .plate-label{
+    margin-top:12px;
+    font-size:13.5px;
+    color:#777;
+    font-weight:500;
+  }
+
+  /* ================= chip tray (pizza slice pieces) ================= */
+  .chip-tray{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:16px;
+    margin-bottom:40px;
+    min-height:110px;
+  }
+  .chip{
+    width:118px;
+    height:104px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding-top:22px;
+    text-align:center;
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+    position:relative;
+    transition:opacity 0.3s ease;
+  }
+  .chip:active{ cursor:grabbing; }
+  .chip .slice-shape{
+    position:absolute;
+    inset:0;
+    clip-path:polygon(10% 0%, 90% 0%, 100% 14%, 50% 100%, 0% 14%);
+    box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  }
+  .chip .slice-crust{
+    position:absolute;
+    top:0; left:8%; right:8%;
+    height:12px;
+    border-radius:8px 8px 0 0;
+    background:var(--crust);
+  }
+  .chip .chip-label{
+    position:relative;
+    z-index:2;
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    color:#fff;
+    line-height:1.25;
+    padding:0 8px;
+  }
+  .chip-kolaborasi .slice-shape{ background:var(--coral); }
+  .chip-kritis .slice-shape{ background:var(--teal); }
+  .chip-kreativiti .slice-shape{ background:var(--gold); }
+  .chip-kreativiti .chip-label{ color:#3a2c00; }
+  .chip-komunikasi .slice-shape{ background:var(--indigo); }
+
+  .chip.used{
+    opacity:0;
+    pointer-events:none;
+  }
+  .chip.dragging{
+    position:fixed;
+    z-index:999;
+    pointer-events:none;
+    transform:scale(1.1) rotate(-3deg);
+  }
+  .chip.shake{ animation:shake 0.4s ease; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-8px); }
+    75%{ transform:translateX(8px); }
+  }
+
+  /* ================= drop zones (scenario cards) ================= */
+  .zone{
+    background:#fafafa;
+    border:2.5px dashed #d8d8d8;
+    border-radius:16px;
+    padding:20px 22px;
+    margin-bottom:18px;
+    transition:border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  }
+  .zone.over{ border-color:#999; background:#f3f3f3; }
+  .zone.solved{
+    border-style:solid;
+    background:#ffffff;
+    box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  }
+  .zone.flash-error{ animation:flashRed 0.35s ease; }
+  @keyframes flashRed{
+    0%,100%{ border-color:#d8d8d8; }
+    50%{ border-color:#e0473f; background:#fff0ef; }
+  }
+  .zone-text{ font-size:15.5px; font-weight:500; }
+  .zone-check{
+    display:none;
+    align-items:center;
+    gap:8px;
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    margin-top:10px;
+  }
+  .zone.solved .zone-check{ display:flex; }
+  .zone-explain{
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    transition:max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease;
+    font-size:14.5px;
+    color:#444;
+    font-style:italic;
+    border-radius:10px;
+    padding:0 12px;
+  }
+  .zone.solved .zone-explain{
+    max-height:260px;
+    opacity:1;
+    margin-top:10px;
+    padding:12px;
+  }
+  .zone[data-correct="kolaborasi"].solved{ border-color:var(--coral); }
+  .zone[data-correct="kritis"].solved{ border-color:var(--teal); }
+  .zone[data-correct="kreativiti"].solved{ border-color:var(--gold); }
+  .zone[data-correct="komunikasi"].solved{ border-color:var(--indigo); }
+  .zone[data-correct="kolaborasi"] .zone-explain{ background:rgba(255,107,74,0.08); }
+  .zone[data-correct="kritis"] .zone-explain{ background:rgba(27,160,152,0.08); }
+  .zone[data-correct="kreativiti"] .zone-explain{ background:rgba(255,200,69,0.12); }
+  .zone[data-correct="komunikasi"] .zone-explain{ background:rgba(91,95,239,0.08); }
+
+  /* ================= completion banner ================= */
+  #completion{
+    display:none;
+    margin-top:40px;
+    text-align:center;
+    padding:34px 24px;
+    border-radius:18px;
+    background:linear-gradient(100deg, var(--coral), var(--gold));
+    color:#fff;
+    box-shadow:0 10px 30px rgba(255,107,74,0.3);
+  }
+  #completion p{
+    font-size:16.5px;
+    font-weight:500;
+    margin:0 0 20px;
+    max-width:520px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  #completion.show{ display:block; animation:fadeUp 0.6s ease forwards; }
+  .btn-continue{
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    color:var(--coral);
+    background:#fff;
+    border:none;
+    padding:14px 32px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,0.15);
+    transition:transform 0.2s ease;
+  }
+  .btn-continue:hover{ transform:scale(1.05); }
+
+  @media (max-width:480px){
+    .chip{ width:100px; height:92px; }
+    .chip .chip-label{ font-size:12px; }
+    .zone-text{ font-size:14.5px; }
+    .plate{ width:120px; height:120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1 class="page-title fade-item" style="animation-delay:0.05s;">4C PAK21 dalam Pengajaran Pecahan</h1>
+  <p class="instruction fade-item" style="animation-delay:0.15s;">Seret setiap keping pizza ke situasi bilik darjah yang paling sesuai — lengkapkan pizza sebagai satu keseluruhan (1) apabila semua betul.</p>
+
+  <div class="plate-wrap fade-item" style="animation-delay:0.22s;">
+    <div class="plate" id="plate"></div>
+    <div class="plate-label" id="plateLabel">0 / 4 keping lengkap</div>
+  </div>
+
+  <div class="chip-tray" id="chipTray">
+    <div class="chip chip-kolaborasi" data-key="kolaborasi" id="chip-kolaborasi">
+      <div class="slice-shape"></div><div class="slice-crust"></div>
+      <div class="chip-label">Kolaborasi</div>
+    </div>
+    <div class="chip chip-kritis" data-key="kritis" id="chip-kritis">
+      <div class="slice-shape"></div><div class="slice-crust"></div>
+      <div class="chip-label">Pemikiran<br>Kritis</div>
+    </div>
+    <div class="chip chip-kreativiti" data-key="kreativiti" id="chip-kreativiti">
+      <div class="slice-shape"></div><div class="slice-crust"></div>
+      <div class="chip-label">Kreativiti</div>
+    </div>
+    <div class="chip chip-komunikasi" data-key="komunikasi" id="chip-komunikasi">
+      <div class="slice-shape"></div><div class="slice-crust"></div>
+      <div class="chip-label">Komunikasi</div>
+    </div>
+  </div>
+
+  <div class="zones fade-item" style="animation-delay:0.35s;">
+
+    <div class="zone" data-correct="kritis" id="zone-1">
+      <div class="zone-text">Murid membandingkan dua cara menyelesaikan masalah pecahan dan menilai cara mana yang menunjukkan kefahaman sebenar.</div>
+      <div class="zone-check">✓ Betul!</div>
+      <div class="zone-explain">Dasar PAK21 menekankan pemikiran aras tinggi — dalam kelas, ini bermakna murid diberi ruang untuk menilai, bukan sekadar menghafal langkah. Membandingkan dua kaedah dan menentukan mana yang menunjukkan kefahaman sebenar ialah dasar ini diterjemahkan kepada amalan.</div>
+    </div>
+
+    <div class="zone" data-correct="komunikasi" id="zone-2">
+      <div class="zone-text">Murid dalam kumpulan menerangkan langkah penyelesaian pecahan mereka kepada rakan sekelas untuk meyakinkan mereka.</div>
+      <div class="zone-check">✓ Betul!</div>
+      <div class="zone-explain">Dasar PAK21 melihat komunikasi sebagai bukti pembelajaran, bukan sekadar kemahiran sosial — apabila murid menerangkan langkah penyelesaian mereka, merekalah yang membuktikan kefahaman itu benar-benar wujud.</div>
+    </div>
+
+    <div class="zone" data-correct="kolaborasi" id="zone-3">
+      <div class="zone-text">Amir dan rakan sekumpulan menggunakan alat digital bersama untuk meneroka mengapa penyebut tidak berubah semasa menambah pecahan.</div>
+      <div class="zone-check">✓ Betul!</div>
+      <div class="zone-explain">PAK21 sebagai dasar menuntut pembelajaran berpusatkan murid — tetapi bagaimana ini kelihatan dalam kelas sebenar? Di sinilah dasar menjadi tindakan: murid membina kefahaman bersama, bukan menerima penjelasan daripada guru semata-mata.</div>
+    </div>
+
+    <div class="zone" data-correct="kreativiti" id="zone-4">
+      <div class="zone-text">Murid mencipta cara baharu menggunakan animasi memotong piza untuk menerangkan konsep pecahan kepada rakan.</div>
+      <div class="zone-check">✓ Betul!</div>
+      <div class="zone-explain">PAK21 menggalakkan penjanaan idea baharu sebagai tuntutan kurikulum — dalam konteks pecahan, ini bermakna murid mencipta representasi sendiri, bukan mengikut satu kaedah tetap sahaja.</div>
+    </div>
+
+  </div>
+
+  <div id="completion">
+    <p>Anda baru sahaja meneroka bagaimana 4C PAK21 diterapkan dalam konteks pecahan. Mari lihat contoh pengajaran sebenar di halaman seterusnya.</p>
+    <button class="btn-continue" onclick="alert('Akan dipautkan ke Halaman 3: Kajian Kes Pecahan')">Teruskan ke Kajian Kes →</button>
+  </div>
+
+</div>
+
+<script>
+/* ================= Web Audio sound effects ================= */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const actx = new AudioCtx();
+
+function tone(freq, start, duration, type, gainPeak){
+  const osc = actx.createOscillator();
+  const gain = actx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, actx.currentTime + start);
+  gain.gain.setValueAtTime(0, actx.currentTime + start);
+  gain.gain.linearRampToValueAtTime(gainPeak, actx.currentTime + start + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + start + duration);
+  osc.connect(gain);
+  gain.connect(actx.destination);
+  osc.start(actx.currentTime + start);
+  osc.stop(actx.currentTime + start + duration + 0.02);
+}
+function playChime(){
+  if(actx.state === 'suspended') actx.resume();
+  tone(1046.5, 0, 0.14, 'sine', 0.18);
+  tone(1318.5, 0.11, 0.18, 'sine', 0.18);
+}
+function playBuzz(){
+  if(actx.state === 'suspended') actx.resume();
+  tone(220, 0, 0.22, 'triangle', 0.14);
+}
+function playArpeggio(){
+  if(actx.state === 'suspended') actx.resume();
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.12, 0.16, 'sine', 0.16));
+}
+
+/* ================= pizza plate progress ================= */
+const pizzaColors = {
+  kolaborasi: '#FF6B4A',
+  kritis: '#1BA098',
+  kreativiti: '#FFC845',
+  komunikasi: '#5B5FEF'
+};
+const order = ['kolaborasi','kritis','kreativiti','komunikasi'];
+const solvedKeys = new Set();
+const plate = document.getElementById('plate');
+const plateLabel = document.getElementById('plateLabel');
+
+function updatePlate(){
+  const stops = order.map((key, i) => {
+    const color = solvedKeys.has(key) ? pizzaColors[key] : 'var(--empty)';
+    return `${color} ${i*90}deg ${(i+1)*90}deg`;
+  }).join(', ');
+  plate.style.background = `conic-gradient(${stops})`;
+  plateLabel.textContent = solvedKeys.size + ' / 4 keping lengkap';
+  if(solvedKeys.size === 4){
+    plate.classList.add('complete');
+  }
+}
+
+/* ================= drag and drop (pointer events, reparented to body) ================= */
+let solvedCount = 0;
+const totalZones = 4;
+
+document.querySelectorAll('.chip').forEach(chip => {
+  let offsetX = 0, offsetY = 0;
+  let originalParent = null;
+  let originalNext = null;
+
+  chip.addEventListener('pointerdown', (e) => {
+    if(chip.classList.contains('used')) return;
+
+    const rect = chip.getBoundingClientRect();
+    offsetX = rect.width / 2;
+    offsetY = rect.height / 2;
+
+    originalParent = chip.parentElement;
+    originalNext = chip.nextElementSibling;
+
+    // reparent to body FIRST so it's never trapped inside a transformed
+    // ancestor, THEN capture the pointer — order matters: capturing
+    // before the reparent causes the browser to silently drop the
+    // capture on the DOM move, breaking all subsequent move/up events.
+    document.body.appendChild(chip);
+    chip.setPointerCapture(e.pointerId);
+
+    chip.style.width = rect.width + 'px';
+    chip.style.height = rect.height + 'px';
+    chip.style.left = rect.left + 'px';
+    chip.style.top = rect.top + 'px';
+    chip.classList.add('dragging');
+  });
+
+  chip.addEventListener('pointermove', (e) => {
+    if(!chip.classList.contains('dragging')) return;
+    chip.style.left = (e.clientX - offsetX) + 'px';
+    chip.style.top = (e.clientY - offsetY) + 'px';
+
+    document.querySelectorAll('.zone').forEach(z => z.classList.remove('over'));
+    chip.style.pointerEvents = 'none';
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    chip.style.pointerEvents = '';
+    const zone = under ? under.closest('.zone') : null;
+    if(zone && !zone.classList.contains('solved')) zone.classList.add('over');
+  });
+
+  chip.addEventListener('pointerup', (e) => {
+    if(!chip.classList.contains('dragging')) return;
+    chip.classList.remove('dragging');
+
+    chip.style.pointerEvents = 'none';
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    chip.style.pointerEvents = '';
+    const zone = under ? under.closest('.zone') : null;
+    document.querySelectorAll('.zone').forEach(z => z.classList.remove('over'));
+
+    chip.style.position = '';
+    chip.style.left = '';
+    chip.style.top = '';
+    chip.style.width = '';
+    chip.style.height = '';
+
+    // put chip back into its original place in the tray
+    if(originalNext){
+      originalParent.insertBefore(chip, originalNext);
+    } else {
+      originalParent.appendChild(chip);
+    }
+
+    if(zone && !zone.classList.contains('solved')){
+      if(zone.dataset.correct === chip.dataset.key){
+        zone.classList.add('solved');
+        playChime();
+        chip.classList.add('used');
+        solvedKeys.add(chip.dataset.key);
+        updatePlate();
+        solvedCount++;
+        if(solvedCount === totalZones){
+          setTimeout(() => {
+            playArpeggio();
+            document.getElementById('completion').classList.add('show');
+            document.getElementById('completion').scrollIntoView({behavior:'smooth', block:'center'});
+          }, 500);
+        }
+      } else {
+        playBuzz();
+        zone.classList.add('flash-error');
+        chip.classList.add('shake');
+        setTimeout(() => {
+          zone.classList.remove('flash-error');
+          chip.classList.remove('shake');
+        }, 400);
+      }
+    }
+  });
+});
+
+updatePlate();
+</script>
+
+</body>
+</html>
